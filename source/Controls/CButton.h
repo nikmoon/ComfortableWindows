@@ -16,15 +16,14 @@ namespace ComfortableWindows
 class CButton : public CControlWindow
 {
 public:
-	CButton(LPCTSTR _text, UINT _id, HINSTANCE _hinst, CBaseWindow *_parent, SWindowRect &_rect);
+	CButton(EControlType _type, LPCTSTR _text, UINT _id, HINSTANCE _hinst, CBaseWindow *_parent, SWindowRect &_rect);
 };
 
 
-class CFixButton : public CControlWindow
-{
-public:
-	CFixButton(LPCTSTR _text, UINT _id, HINSTANCE _hinst, CBaseWindow *_parent, SWindowRect &_rect);
-};
+typedef CButton CCheckBox;
+typedef CButton CRadioButton;
+
+
 
 } /* namespace ComfortableWindows */
 

@@ -111,7 +111,11 @@ COwnerWindow::~COwnerWindow()
 LRESULT
 COwnerWindow::OnMessage(UINT msg, WPARAM wp, LPARAM lp)
 {
-	return CBaseWindow::OnMessage(msg,wp,lp);
+	LRESULT result;
+
+	result = CBaseWindow::OnMessage(msg,wp,lp);
+
+	return result;
 }
 
 

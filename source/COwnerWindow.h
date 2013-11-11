@@ -46,6 +46,7 @@ public:
 
 	virtual LRESULT OnMessage(UINT msg, WPARAM wp, LPARAM lp);
 
+
 private:
 	bool m_IsStdWndClass;
 
