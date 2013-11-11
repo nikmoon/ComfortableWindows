@@ -1,0 +1,4 @@
+ComfortableWindows
+==================
+
+WinApi C++ wrapper
