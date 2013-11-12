@@ -10,10 +10,11 @@
 namespace ComfortableWindows
 {
 
-CButton::CButton(EControlType _type, LPCTSTR _text, UINT _id, HINSTANCE _hinst, CBaseWindow *_parent, SWindowRect &_rect)
+CButton::CButton(EControlType _type, LPCTSTR _text, UINT _id, HINSTANCE _hinst, CBaseWindow *_parent, const SWindowRect &_rect)
 	: CControlWindow(_type, 0, _text,_parent,_id,_hinst,_rect)
 {
 
 }
+
 
 } /* namespace ComfortableWindows */

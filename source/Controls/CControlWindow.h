@@ -9,11 +9,14 @@
 #define CCONTROLWINDOW_H_
 
 #include "../CChildWindow.h"
+#include <vector>
 
 namespace ComfortableWindows
 {
 
-
+//
+//		Доступные типы элементов управления
+//
 enum EControlType
 {
 	ECT_BUTTON = 0,
@@ -25,6 +28,9 @@ enum EControlType
 };
 
 
+//
+//		Структура данных с информацией для создания элемента управления
+//
 struct SControlTypeInfo
 {
 	LPCTSTR m_CtrlClassName;
@@ -32,17 +38,22 @@ struct SControlTypeInfo
 };
 
 
+
+
+
+
 class CControlWindow: public CChildWindow
 {
 public:
 	CControlWindow(EControlType _type, DWORD _exstyle, LPCTSTR _text, CBaseWindow *_parent, UINT _id, HINSTANCE _hinst,
-		SWindowRect &_rect);
+		const SWindowRect &_rect);
 
 	static void BeginControlGroup() { m_BeginGroup = WS_GROUP|WS_TABSTOP; };
 
-	static SControlTypeInfo m_ControlClasses[];	// массив с информацией о типах элементов, доступных для создания
+
 
 private:
+	static SControlTypeInfo m_ControlClasses[];	// массив с информацией для создания предопределенных элементов управления
 	static DWORD m_BeginGroup;
 };
 

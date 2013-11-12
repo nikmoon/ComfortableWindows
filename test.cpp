@@ -18,11 +18,11 @@ using namespace ComfortableWindows;
 class CMainWindow : public CDialogWindow
 {
 public:
-	CMainWindow(HINSTANCE _hinst, LPCTSTR _title, SWindowRect &_rect);
+	CMainWindow(HINSTANCE _hinst, LPCTSTR _title, const SWindowRect &_rect);
 	virtual ~CMainWindow();
 
 	virtual LRESULT OnDestroy();
-	virtual LRESULT OnCommandFromButton(CButton *pb, DWORD _ncode);
+	virtual LRESULT ExecuteAction(int _aindex, UINT _msg, WPARAM wp, LPARAM lp);
 
 private:
 	CButton *pButton, *pFixator;
@@ -32,22 +32,12 @@ private:
 
 
 
-CMainWindow::CMainWindow(HINSTANCE _hinst, LPCTSTR _title, SWindowRect &_rect)
-	: CDialogWindow(TLWS_WINDOW_SIZIBLE_WITH_MINMAXBUTT, 0, _title, NULL, NULL, _hinst, _rect)
+CMainWindow::CMainWindow(HINSTANCE _hinst, LPCTSTR _title, const SWindowRect &_rect)
+	: CDialogWindow(ETLWS_WINDOW_SIZIBLE_WITH_MINMAXBUTT, 0, _title, NULL, NULL, _hinst, _rect)
 {
-	SWindowRect buttRect = {10, 10, 100, 30};
-	SWindowRect fixtRect = {150, 50, 100, 30};
-	SWindowRect boxRect = {120, 10, 100, 30};
-
-	pButton = new CButton(ECT_BUTTON,"Exit",101,_hinst,this,buttRect);
-	pFixator = new CButton(ECT_FIXBUTTON,"Fix Op",102,_hinst,this,fixtRect);
-	pBox1 = new CCheckBox(ECT_AUTOCHECKBOX, "Some check", 103, _hinst,this,boxRect);
-
-	if (typeid(*pButton) == typeid(*pBox1))
-		MessageBox(NULL, "Типы CButton и CCheckBox эквивалентны","Внимание",MB_OK);
-	else
-		MessageBox(NULL, "Типы CButton и CCheckBox НЕ эквивалентны","Внимание",MB_OK);
-
+	(pButton = new CButton(ECT_BUTTON,"Exit",101,_hinst,this,{10, 10, 100, 30}))->OnClick(0);
+	(pFixator = new CButton(ECT_FIXBUTTON,"Fix Op",102,_hinst,this,{150, 50, 100, 30}))->OnClick(1);
+	(pBox1 = new CCheckBox(ECT_AUTOCHECKBOX, "Exit on Button", 103, _hinst,this,{120, 10, 130, 30}))->OnClick(2);
 }
 
 
@@ -58,6 +48,7 @@ CMainWindow::~CMainWindow()
 	delete pButton;
 }
 
+
 LRESULT
 CMainWindow::OnDestroy()
 {
@@ -67,31 +58,32 @@ CMainWindow::OnDestroy()
 
 
 LRESULT
-CMainWindow::OnCommandFromButton(CButton *_pb, DWORD _ncode)
+CMainWindow::ExecuteAction(int _aindex, UINT _msg,  WPARAM wp, LPARAM lp)
 {
-	switch (_ncode)
+	LRESULT result = 0;
+
+	switch (_aindex)
 	{
-		case BN_CLICKED:
-			if (_pb == pButton)
-			{
-				Destroy();
-			}
-			else if (_pb == pFixator)
-			{
-				MessageBox(GetHWnd(), "Вы нажали фиксирующуюся кнопку", "Внимание", MB_OK);
-			}
-			return 0;
+		case 0:
+			if (pBox1->IsChecked()) Destroy();
+			break;
+		case 1:
+			//MessageBox(GetHWnd(), "Урраааа!!! Работает!!!!", "Хорошая новость!!!", MB_OK);
+			break;
+		case 2:
+			//MessageBox(GetHWnd(), "Хватит баловаться с галочкой!!!", "А ну перестань!!!", MB_OK);
+			break;
 		default:
-			return 0;
+			result = CDialogWindow::ExecuteAction(_aindex,_msg,wp,lp);
 	}
+	return result;
 }
 
 
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCmdShow)
 {
-	SWindowRect winRect = {100, 100, 800, 600};
-	CMainWindow *pWindow = new CMainWindow(hInst, "Standard Window", winRect);
+	CMainWindow *pWindow = new CMainWindow(hInst, "Standard Window", {200, 200, 800, 600});
 
 	pWindow->Show();
 	pWindow->UpdateContent();

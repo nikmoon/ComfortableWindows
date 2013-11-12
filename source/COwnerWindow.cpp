@@ -6,23 +6,31 @@
  */
 
 #include "COwnerWindow.h"
+#include "CChildWindow.h"
 
 namespace ComfortableWindows
 {
 
-// стиль стандартного окна
+// дефолтный стиль дефолтного оконного класса
 UINT
 COwnerWindow::m_StdWndClassStyle = CS_HREDRAW|CS_VREDRAW;
 
-// стандартный класс для окон
+// дефолтный класс для стандартных окон
 WNDCLASSEX *
 COwnerWindow::m_StdWndClass = NULL;
 
-// количество окон стандартного класса
+// количество созданных окон дефолтного класса
 int
 COwnerWindow::m_StdWndCount = 0;
 
 
+//
+//		Условная регистрация дефолтного оконного класса
+//		----------------------------------------------------------
+//
+//		Дефолтный класс регистрируется, если не зарегистрирован.
+//		Возвращается имя оконного класса.
+//
 LPCTSTR
 COwnerWindow::RegisterStdWndClass(HINSTANCE _hinst)
 {
@@ -51,21 +59,19 @@ COwnerWindow::RegisterStdWndClass(HINSTANCE _hinst)
 		}
 	}
 
-	// инкрементируем счетчик окон стандартного класса
-	m_StdWndCount++;
-
 	return m_StdWndClass->lpszClassName;
 }
 
 
+//
+//		Отмена регистрации дефолтного оконного класса
+//		--------------------------------------------------------------
+//
+//		Если окон дефолтного класса больше нет, производится отмена регистрации дефолтного оконного класса
+//
 void
 COwnerWindow::UnregisterStdWndClass()
 {
-	// декрементируем счетчик окон стандартного класса
-	m_StdWndCount--;
-
-	// если окон больше нет
-	if (m_StdWndCount == 0)
 	{	// отменяем системную регистрацию класса
 		if (::UnregisterClass(m_StdWndClass->lpszClassName, m_StdWndClass->hInstance) == 0)
 		{	// какая-то ошибка, генерируем исключение
@@ -81,42 +87,73 @@ COwnerWindow::UnregisterStdWndClass()
 
 
 COwnerWindow::COwnerWindow(LPCTSTR _clname, ETopLevelWindowStyle _style, DWORD _exstyle, LPCTSTR _title, CBaseWindow *_parent, HMENU _hmenu,
-	HINSTANCE _hinst, SWindowRect &_rect, LPVOID _pdata)
+	HINSTANCE _hinst, const SWindowRect &_rect, LPVOID _pdata)
 	: CBaseWindow(_clname, _style, _exstyle, _title, _parent, _hmenu, _hinst, _rect, _pdata)
-{	// окно создано на основе пользовательского оконного класса
+{
+	// окно создано на основе пользовательского оконного класса
 	m_IsStdWndClass = false;
 }
 
 
 
 COwnerWindow::COwnerWindow(ETopLevelWindowStyle _style, DWORD _exstyle, LPCTSTR _title, CBaseWindow *_parent, HMENU _hmenu,
-	HINSTANCE _hinst, SWindowRect &_rect, LPVOID _pdata)
+	HINSTANCE _hinst, const SWindowRect &_rect, LPVOID _pdata)
 	: CBaseWindow(RegisterStdWndClass(_hinst), _style, _exstyle, _title, _parent, _hmenu, _hinst, _rect, _pdata)
-{	// окно создано на основе стандартного оконного класса
+{
+	// окно создано на основе стандартного оконного класса
 	m_IsStdWndClass = true;
+
+	// инкрементируем счетчик окон стандартного класса
+	m_StdWndCount++;
 }
 
 
 COwnerWindow::~COwnerWindow()
 {
-	// если окно стандартного класса
-	if (m_IsStdWndClass)
-	{	// советуем классу отменить регистрацию стандартного класса
+	// декрементируем счетчик окон стандартного класса
+	m_StdWndCount--;
+
+	// если было окно дефолтного класса и оно было последним
+	if ((m_IsStdWndClass) && (m_StdWndCount == 0))
+	{	// отменяем регистрацию дефолтного класса
 		UnregisterStdWndClass();
 	}
 }
-
-
 
 LRESULT
 COwnerWindow::OnMessage(UINT msg, WPARAM wp, LPARAM lp)
 {
 	LRESULT result;
 
-	result = CBaseWindow::OnMessage(msg,wp,lp);
+	switch (msg)
+	{
+		case WM_COMMAND:
+			if (lp != 0)	// если не нуль, значит уведомление от элемента управления
+			{
+				CChildWindow *pwin = (CChildWindow*)(GetObjectPtr((HWND)lp));
+				int aindex = pwin->aIndex(HIWORD(wp));
+				result = ExecuteAction(aindex, WM_COMMAND, wp, lp);
+			}
+			else
+			{
+				result = CBaseWindow::OnMessage(msg,wp,lp);
+			}
+			break;
+		case WM_DESTROY:
+			result = OnDestroy();
+			break;
+		default:
+			result = CBaseWindow::OnMessage(msg,wp,lp);
+			break;
+	}
 
 	return result;
 }
 
+LRESULT
+COwnerWindow::ExecuteAction(int _aindex, UINT _msg,  WPARAM wp, LPARAM lp)
+{
+	return CBaseWindow::OnMessage(_msg, wp, lp);
+}
 
 } /* namespace ComfortableWindows */

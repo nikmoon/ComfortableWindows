@@ -9,6 +9,7 @@
 #define CBUTTON_H_
 
 #include "CControlWindow.h"
+#include <windowsx.h>
 
 namespace ComfortableWindows
 {
@@ -16,7 +17,9 @@ namespace ComfortableWindows
 class CButton : public CControlWindow
 {
 public:
-	CButton(EControlType _type, LPCTSTR _text, UINT _id, HINSTANCE _hinst, CBaseWindow *_parent, SWindowRect &_rect);
+	CButton(EControlType _type, LPCTSTR _text, UINT _id, HINSTANCE _hinst, CBaseWindow *_parent, const SWindowRect &_rect);
+	void OnClick(int _aindex) { AddActionIndex(BN_CLICKED, _aindex); };
+	bool IsChecked() { return (Button_GetCheck(GetHWnd()) == BST_CHECKED); };
 };
 
 

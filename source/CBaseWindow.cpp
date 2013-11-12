@@ -11,17 +11,20 @@ namespace ComfortableWindows
 {
 
 
-
+//
+//		Основной конструктор класса
+//		-----------------------------------------------------
+//
 CBaseWindow::CBaseWindow(
-	LPCTSTR _clname,
-	DWORD _style,
-	DWORD _exstyle,
-	LPCTSTR _title,
-	CBaseWindow *_parent,
-	HMENU _hmenu,
-	HINSTANCE _hinst,
-	SWindowRect &_rect,
-	LPVOID _pdata)
+	LPCTSTR _clname,		// имя оконного класса
+	DWORD _style,			// основной стиль для окна
+	DWORD _exstyle,			// расширенный стиль для окна
+	LPCTSTR _title,			// заголовок окна
+	CBaseWindow *_parent,	// родительское окно
+	HMENU _hmenu,			// описатель меню окна
+	HINSTANCE _hinst,		// описатель модуля, создающего окно
+	const SWindowRect &_rect,	// геометрия окна
+	LPVOID _pdata)			// дополнительные данные для создания окна
 {
 	// получим описатель родительского окна
 	HWND hparent = (_parent == NULL) ? NULL : _parent->m_hWnd;
@@ -34,8 +37,8 @@ CBaseWindow::CBaseWindow(
 		// здесь бросаем исключение
 	}
 
-	// выполняем связывание
-	SetWndPtr(m_hWnd, this);
+	// выполняем связывание данного экземпляра с созданным системным окном
+	Binding(m_hWnd, this);
 
 	// инициализируем остальные поля экземпляра
 	m_hInst = _hinst;
@@ -44,9 +47,10 @@ CBaseWindow::CBaseWindow(
 }
 
 
-
-
-
+//
+//		Деструктор
+//		----------------------------------
+//
 CBaseWindow::~CBaseWindow()
 {
 	// если на момент уничтожения экземпляра окно еще не уничтожено
@@ -60,76 +64,38 @@ CBaseWindow::~CBaseWindow()
 }
 
 
+//
+//		Дефолтный обработчик сообщений
+//
+//		Вызывается в случае отсутствия какого-либо обработчика
+//		При необходимости может переопределяться
+//
+LRESULT
+CBaseWindow::OnMessageDefault(UINT msg, WPARAM wp, LPARAM lp)
+{
+	return ::DefWindowProc(m_hWnd, msg, wp, lp);
+};
+
+
+//
+//		Базовый обработчик сообщений
+//
+//		Переопределяемый для наследуемых классов
+//
 LRESULT
 CBaseWindow::OnMessage(UINT msg, WPARAM wp, LPARAM lp)
 {
-	LRESULT result;
-
-	switch(msg)
-	{
-		case WM_CLOSE:
-			result = OnClose();
-			break;
-		case WM_DESTROY:
-			result = OnDestroy();
-			break;
-		default:
-			result = OnMessageDefault(msg, wp, lp);
-	}
-
-	return result;
+	return OnMessageDefault(msg, wp, lp);
 }
-
-
-CBaseWindow *
-CBaseWindow::GetWndPtr(HWND hwnd)
-{
-	return (CBaseWindow*)::GetWindowLongPtr(hwnd, GWLP_USERDATA);
-}
-
-
-
-
-WNDPROC
-CBaseWindow::GetWndProc(HWND hwnd)
-{
-	return (WNDPROC)::GetWindowLongPtr(hwnd, GWLP_WNDPROC);
-}
-
 
 
 LRESULT CALLBACK
 CBaseWindow::BaseWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	// получаем адрес связанного с окном экземпляра объекта
-	CBaseWindow * pWindow = CBaseWindow::GetWndPtr(hwnd);
+	CBaseWindow * pWindow = CBaseWindow::GetObjectPtr(hwnd);
 
-	LRESULT result;
-
-	if (pWindow == NULL)
-	{
-		result = ::DefWindowProc(hwnd, msg, wp, lp);
-	}
-	else
-	{
-		result = pWindow->OnMessage(msg, wp, lp);
-	}
-
-	return result;
-}
-
-
-void
-CBaseWindow::SetWndPtr(HWND _hwnd, CBaseWindow *_obj)
-{
-	::SetWindowLongPtr(_hwnd, GWLP_USERDATA, (LONG_PTR)_obj);
-}
-
-
-WNDPROC
-CBaseWindow::SetWndProc(HWND _hwnd, WNDPROC _proc)
-{
-	return (WNDPROC)::SetWindowLongPtr(_hwnd, GWLP_WNDPROC, (LONG_PTR)_proc);
+	return (pWindow) ? pWindow->OnMessage(msg, wp, lp) : ::DefWindowProc(hwnd, msg, wp, lp);
 }
 
 
