@@ -21,7 +21,10 @@ public:
 	CMainWindow(HINSTANCE _hinst, LPCTSTR _title, const SWindowRect &_rect);
 	virtual ~CMainWindow();
 
-	virtual LRESULT OnDestroy();
+	virtual LRESULT OnMessage(UINT msg, WPARAM wp, LPARAM lp);
+
+	virtual LRESULT OnPaint(UINT msg, WPARAM wp, LPARAM lp);
+	virtual LRESULT OnDestroy(UINT msg, WPARAM wp, LPARAM lp);
 	virtual LRESULT ExecuteAction(int _aindex, UINT _msg, WPARAM wp, LPARAM lp);
 
 private:
@@ -48,9 +51,38 @@ CMainWindow::~CMainWindow()
 	delete pButton;
 }
 
+LRESULT
+CMainWindow::OnMessage(UINT msg, WPARAM wp, LPARAM lp)
+{
+	LRESULT result;
+
+	switch (msg)
+	{
+		default:
+			result = CDialogWindow::OnMessage(msg,wp,lp);
+			break;
+	}
+
+	return result;
+}
+
 
 LRESULT
-CMainWindow::OnDestroy()
+CMainWindow::OnPaint(UINT msg, WPARAM wp, LPARAM lp)
+{
+	HDC hDC;
+	PAINTSTRUCT ps;
+
+	hDC = ::BeginPaint(GetHWnd(), &ps);
+	::TextOut(hDC, 20, 150, "Обрабатываем WM_PAINT", 15);
+	::EndPaint(GetHWnd(), &ps);
+
+	return 0;
+}
+
+
+LRESULT
+CMainWindow::OnDestroy(UINT msg, WPARAM wp, LPARAM lp)
 {
 	PostQuitMessage(0);
 	return 0;

@@ -85,7 +85,35 @@ CBaseWindow::OnMessageDefault(UINT msg, WPARAM wp, LPARAM lp)
 LRESULT
 CBaseWindow::OnMessage(UINT msg, WPARAM wp, LPARAM lp)
 {
-	return OnMessageDefault(msg, wp, lp);
+	LRESULT result;
+
+	switch (msg)
+	{
+		case WM_PAINT:
+			result = OnPaint(msg,wp,lp);
+			break;
+		case WM_DESTROY:
+			result = OnDestroy(msg,wp,lp);
+			break;
+		default:
+			result = OnMessageDefault(msg,wp,lp);
+			break;
+	}
+	return result;
+}
+
+
+LRESULT
+CBaseWindow::OnPaint(UINT msg, WPARAM wp, LPARAM lp)
+{
+	return OnMessageDefault(msg,wp,lp);
+}
+
+
+LRESULT
+CBaseWindow::OnDestroy(UINT msg, WPARAM wp, LPARAM lp)
+{
+	return OnMessageDefault(msg,wp,lp);
 }
 
 

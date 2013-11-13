@@ -63,6 +63,8 @@ public:
 	static LRESULT CALLBACK BaseWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
 	virtual LRESULT OnMessageDefault(UINT msg, WPARAM wp, LPARAM lp);
 	virtual LRESULT OnMessage(UINT msg, WPARAM wp, LPARAM lp);
+	virtual LRESULT OnPaint(UINT msg, WPARAM wp, LPARAM lp);
+	virtual LRESULT OnDestroy(UINT msg, WPARAM wp, LPARAM lp);
 
 private:
 	HINSTANCE m_hInst;

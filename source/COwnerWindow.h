@@ -47,7 +47,6 @@ public:
 	virtual ~COwnerWindow();
 
 	virtual LRESULT OnMessage(UINT msg, WPARAM wp, LPARAM lp);
-	virtual LRESULT OnDestroy() = 0;
 	virtual LRESULT ExecuteAction(int _aindex, UINT _msg, WPARAM wp, LPARAM lp);
 
 

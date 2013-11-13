@@ -139,14 +139,10 @@ COwnerWindow::OnMessage(UINT msg, WPARAM wp, LPARAM lp)
 				result = CBaseWindow::OnMessage(msg,wp,lp);
 			}
 			break;
-		case WM_DESTROY:
-			result = OnDestroy();
-			break;
 		default:
 			result = CBaseWindow::OnMessage(msg,wp,lp);
 			break;
 	}
-
 	return result;
 }
 
