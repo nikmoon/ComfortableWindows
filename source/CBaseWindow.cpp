@@ -11,6 +11,9 @@ namespace ComfortableWindows
 {
 
 
+DWORD
+CBaseWindow::sm_VisibleOnCreate = WS_VISIBLE;
+
 //
 //		ќсновной конструктор класса
 //		-----------------------------------------------------
@@ -29,6 +32,9 @@ CBaseWindow::CBaseWindow(
 	// получим описатель родительского окна
 	HWND hparent = (_parent == NULL) ? NULL : _parent->m_hWnd;
 
+	// окно будет видимым, если хот€ бы один из флагов установлен
+	_style |= sm_VisibleOnCreate;
+
 	// создадим окно
 	m_hWnd = ::CreateWindowEx(_exstyle, _clname, _title, _style, _rect.x, _rect.y, _rect.cx, _rect.cy, hparent, _hmenu, _hinst, _pdata);
 	// проверим на ошибки
@@ -37,13 +43,13 @@ CBaseWindow::CBaseWindow(
 		// здесь бросаем исключение
 	}
 
-	// выполн€ем св€зывание данного экземпл€ра с созданным системным окном
-	Binding(m_hWnd, this);
-
 	// инициализируем остальные пол€ экземпл€ра
 	m_hInst = _hinst;
 	m_ClassName = _clname;
 	m_pParent = _parent;
+
+	// выполн€ем св€зывание данного экземпл€ра с созданным системным окном
+	Binding(m_hWnd);
 }
 
 
@@ -95,6 +101,9 @@ CBaseWindow::OnMessage(UINT msg, WPARAM wp, LPARAM lp)
 		case WM_DESTROY:
 			result = OnDestroy(msg,wp,lp);
 			break;
+		case WM_COMMAND:
+			result = OnCommand(msg,wp,lp);
+			break;
 		default:
 			result = OnMessageDefault(msg,wp,lp);
 			break;
@@ -114,6 +123,53 @@ LRESULT
 CBaseWindow::OnDestroy(UINT msg, WPARAM wp, LPARAM lp)
 {
 	return OnMessageDefault(msg,wp,lp);
+}
+
+
+LRESULT
+CBaseWindow::OnCommand(UINT msg, WPARAM wp, LPARAM lp)
+{
+	return OnMessageDefault(msg,wp,lp);
+}
+
+
+LRESULT
+CBaseWindow::ExecuteAction(int _aindex, UINT _msg, WPARAM _wp, LPARAM _lp)
+{
+	return OnMessageDefault(_msg,_wp,_lp);
+}
+
+
+
+int
+CBaseWindow::GetActionIndex(WORD _ntfy)
+{
+	// ищем элемент с указанным кодом уведомлени€
+	for (SNotifyBindWithActionIndex &s : m_NtfyActionIndexArray)
+	{
+		if (s.m_NotifyCode == _ntfy)	// найден такой элемент
+			return s.m_ActionIndex;
+	}
+
+	// элемент не найден
+	return -1;
+}
+
+void
+CBaseWindow::SetActionIndex(WORD _ntfy, int _aindex)
+{
+	// сначала попробуем найти элемент с указанным кодом уведомлени€
+	for (SNotifyBindWithActionIndex &s : m_NtfyActionIndexArray)
+	{
+		if (s.m_NotifyCode == _ntfy)	// найден такой элемент
+		{
+			s.m_ActionIndex = _aindex;	// записываем индекс действи€
+			return;		// выход
+		}
+	}
+
+	// элемент не найден, добавим
+	m_NtfyActionIndexArray.push_back( {_ntfy,_aindex} );
 }
 
 

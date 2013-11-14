@@ -8,53 +8,21 @@
 #ifndef CCONTROLWINDOW_H_
 #define CCONTROLWINDOW_H_
 
-#include "../CChildWindow.h"
-#include <vector>
+#include "../CBaseWindow.h"
 
 namespace ComfortableWindows
 {
 
-//
-//		Доступные типы элементов управления
-//
-enum EControlType
-{
-	ECT_BUTTON = 0,
-	ECT_FIXBUTTON = 1,
-	ECT_CHECKBOX = 2,
-	ECT_AUTOCHECKBOX = 3,
-	ECT_CHECKBOX3STATE = 4,
-	ECT_AUTOCHECKBOX3STATE = 5
-};
-
-
-//
-//		Структура данных с информацией для создания элемента управления
-//
-struct SControlTypeInfo
-{
-	LPCTSTR m_CtrlClassName;
-	DWORD m_CtrlStyle;
-};
-
-
-
-
-
-
-class CControlWindow: public CChildWindow
+class CControlWindow: public CBaseWindow
 {
 public:
-	CControlWindow(EControlType _type, DWORD _exstyle, LPCTSTR _text, CBaseWindow *_parent, UINT _id, HINSTANCE _hinst,
+	CControlWindow(LPCTSTR _clname, DWORD _style, DWORD _exstyle, LPCTSTR _text, CBaseWindow *_parent, UINT _id, HINSTANCE _hinst,
 		const SWindowRect &_rect);
 
-	static void BeginControlGroup() { m_BeginGroup = WS_GROUP|WS_TABSTOP; };
-
-
+	static void BeginControlGroup() { sm_BeginGroup = WS_GROUP|WS_TABSTOP; };
 
 private:
-	static SControlTypeInfo m_ControlClasses[];	// массив с информацией для создания предопределенных элементов управления
-	static DWORD m_BeginGroup;
+	static DWORD sm_BeginGroup;
 };
 
 } /* namespace ComfortableWindows */

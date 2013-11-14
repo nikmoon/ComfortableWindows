@@ -13,9 +13,10 @@
 #include <vector>
 
 
-#undef GetClassName
+#undef GetClassName		// данный идентификатор будет применяться в качестве имени метода
 
 using namespace std;
+
 
 namespace ComfortableWindows
 {
@@ -29,6 +30,30 @@ struct SWindowRect
 };
 
 
+//
+//	Структура связи индекса действия родительского окна m_ActionIndex, которое
+//	должно выполняться при получении им уведомления m_NotifyCode от дочернего окна
+//
+//	Любое дочернее окно, которое может посылать родительскому окну уведомления,
+//	должно содержать соответствующее количеству уведомлений число таких структур.
+//	Индексы действий  могут передаваться родительским окном дочернему различными способами.
+//
+//	Описание принципа действия:
+//		Пусть дочернее окно может послать родит. окну 2 уведомления MSG_CREATED и MSG_DESTROYED.
+//	Значит доч. окно должно содержать не меньше 2 таких структур. После создания или в процессе
+//	создания (через конструктор) род. окно сообщает доч. окну какой индекс действия должен быть
+//	связан с соответствующим уведомление.
+//		Когда род. окно получает уведомление от дочернего, оно дополнительно запрашивает
+//	у дочернего, какой индекс действия связан с данным уведомление, и на основе этого индекса
+//	понимает, какие действия нужно предпринять.
+//	Получилась несложная система обработки уведомлений от дочерних окон.
+//
+struct SNotifyBindWithActionIndex
+{
+	WORD m_NotifyCode;	// код уведомления
+	int m_ActionIndex;	// индекс действия
+};
+
 
 //
 //	Базовый класс оконной библиотеки
@@ -41,37 +66,53 @@ public:
 
 	virtual ~CBaseWindow();
 
+	// ФЛАГИ
+	static void ShowOnCreate(bool _show = true) { if (_show) sm_VisibleOnCreate = WS_VISIBLE; else sm_VisibleOnCreate = 0; };
 
-	static void Binding(HWND _hwnd, CBaseWindow *_obj) { ::SetWindowLongPtr(_hwnd, GWLP_USERDATA, (LONG_PTR)_obj); };
-	static WNDPROC InitSubclassing(HWND _hwnd, WNDPROC _proc) { return (WNDPROC)::SetWindowLongPtr(_hwnd, GWLP_WNDPROC, (LONG_PTR)_proc); };
-	static WNDPROC DoneSubclassing(HWND _hwnd, WNDPROC _baseproc) { return InitSubclassing(_hwnd, _baseproc); };
-
+	// ГЕТТЕРЫ
 	static CBaseWindow *GetObjectPtr(HWND _hwnd) { return (CBaseWindow*)::GetWindowLongPtr(_hwnd, GWLP_USERDATA); };
 	static WNDPROC GetWndProc(HWND _hwnd) { return (WNDPROC)::GetWindowLongPtr(_hwnd, GWLP_WNDPROC); };
 
+	HWND GetHWnd() const					{ return m_hWnd; };
+	HINSTANCE GetHInst() const				{ return m_hInst; };
+	LPCTSTR GetClassName() const			{ return m_ClassName.c_str(); };
+	CBaseWindow *GetParentWindow() const	{ return m_pParent; };
 
-	HWND GetHWnd()			{ return m_hWnd; };
-	HINSTANCE GetHInst()	{ return m_hInst; };
-	LPCTSTR GetClassName()	{ return m_ClassName.c_str(); };
-	CBaseWindow *GetParentWindow() { return m_pParent; };
-
+	// МЕТОДЫ
 	void Show() 			{ ::ShowWindow(m_hWnd, SW_SHOW); };
 	void Hide() 			{ ::ShowWindow(m_hWnd, SW_HIDE); };
 	void UpdateContent() 	{ ::UpdateWindow(m_hWnd); };
 	void Destroy() 			{ ::DestroyWindow(m_hWnd); };
+
+	int GetActionIndex(WORD _ntfy);
+
+	static WNDPROC InitSubclassing(HWND _hwnd, WNDPROC _proc) { return (WNDPROC)::SetWindowLongPtr(_hwnd, GWLP_WNDPROC, (LONG_PTR)_proc); };
+	static WNDPROC DoneSubclassing(HWND _hwnd, WNDPROC _baseproc) { return InitSubclassing(_hwnd, _baseproc); };
+
+protected:
+	HINSTANCE m_hInst;
+	HWND m_hWnd;
+	string m_ClassName;
+	CBaseWindow *m_pParent;
+
+	void SetActionIndex(WORD _ntfy, int _aindex);
 
 	static LRESULT CALLBACK BaseWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
 	virtual LRESULT OnMessageDefault(UINT msg, WPARAM wp, LPARAM lp);
 	virtual LRESULT OnMessage(UINT msg, WPARAM wp, LPARAM lp);
 	virtual LRESULT OnPaint(UINT msg, WPARAM wp, LPARAM lp);
 	virtual LRESULT OnDestroy(UINT msg, WPARAM wp, LPARAM lp);
+	virtual LRESULT OnCommand(UINT msg, WPARAM wp, LPARAM lp);
+
+	virtual LRESULT ExecuteAction(int _aindex, UINT _msg, WPARAM _wp, LPARAM _lp);
 
 private:
-	HINSTANCE m_hInst;
-	HWND m_hWnd;
-	string m_ClassName;
-	CBaseWindow *m_pParent;
+	void Binding(HWND _hwnd) { ::SetWindowLongPtr(_hwnd, GWLP_USERDATA, (LONG_PTR)this); };
 
+	static DWORD sm_VisibleOnCreate;
+
+	// массив структур связи уведомлений и индексов действия;
+	vector<SNotifyBindWithActionIndex> m_NtfyActionIndexArray;
 };
 
 } /* namespace ComfortableWindows */
