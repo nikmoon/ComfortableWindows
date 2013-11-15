@@ -87,8 +87,15 @@ CDialogWindow::OnCommand(UINT msg, WPARAM wp, LPARAM lp)
 	if (lp != 0)	// получено уведомление от дочернего элемента
 	{
 		CBaseWindow *pCtrl = CBaseWindow::GetObjectPtr((HWND)lp);	// получаем дочерний элемент
-		int aindex = pCtrl->GetActionIndex(HIWORD(wp));		// получаем от дочернего элемента сохраненный индекс действия
-		result = ExecuteAction(aindex,msg,wp,lp);	// выполняем требуемое действие
+		if (pCtrl)
+		{
+			int aindex = pCtrl->GetActionIndex(HIWORD(wp));		// получаем от дочернего элемента сохраненный индекс действия
+			result = ExecuteAction(aindex,msg,wp,lp);	// выполняем требуемое действие
+		}
+		else
+		{
+			result = OnMessageDefault(msg,wp,lp);
+		}
 	}
 	else
 	{

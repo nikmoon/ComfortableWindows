@@ -41,32 +41,32 @@ class CButton : public CControlWindow
 public:
 	CButton(EButtonType _btype, LPCTSTR _text, UINT _id, HINSTANCE _hinst, CBaseWindow *_parent, const SWindowRect &_rect);
 
-	bool IsPushed() { return (Button_GetCheck(m_hWnd) == BST_CHECKED); };
+	bool IsChecked() { return (Button_GetCheck(m_hWnd) == BST_CHECKED); };
+	bool IsPushed() { return IsChecked(); };
 
 	void OnClick(int _aindex) { SetActionIndex(BN_CLICKED, _aindex); };
 };
 
 
 
-class CCheckBox : public CControlWindow
+class CCheckBox : public CButton
 {
 public:
 	CCheckBox(ECheckBoxType _cbtype, LPCTSTR _text, UINT _id, HINSTANCE _hinst, CBaseWindow *_parent, const SWindowRect &_rect);
-
-	bool IsChecked() { return (Button_GetCheck(m_hWnd) == BST_CHECKED); };
-
-	void OnClick(int _aindex) { SetActionIndex(BN_CLICKED, _aindex); };
 };
 
 
-class CRadioButton : public CControlWindow
+class CRadioButton : public CButton
 {
 public:
 	CRadioButton(ERadioButtonType _rbtype, LPCTSTR _text, UINT _id, HINSTANCE _hinst, CBaseWindow *_parent, const SWindowRect &_rect);
+};
 
-	bool IsChecked() { return (Button_GetCheck(m_hWnd) == BST_CHECKED); };
 
-	void OnClick(int _aindex) { SetActionIndex(BN_CLICKED, _aindex); };
+class CGroupBox : public CButton
+{
+public:
+	CGroupBox(LPCTSTR _title, UINT _id, HINSTANCE _hinst, CBaseWindow *_parent, const SWindowRect &_rect);
 };
 
 

@@ -19,14 +19,20 @@ CButton::CButton(EButtonType _btype, LPCTSTR _text, UINT _id, HINSTANCE _hinst, 
 
 
 CCheckBox::CCheckBox(ECheckBoxType _cbtype, LPCTSTR _text, UINT _id, HINSTANCE _hinst, CBaseWindow *_parent, const SWindowRect &_rect)
-	: CControlWindow("BUTTON",_cbtype, 0, _text,_parent,_id,_hinst,_rect)
+	: CButton((EButtonType)_cbtype, _text, _id, _hinst, _parent, _rect)
 {
 
 }
 
 
 CRadioButton::CRadioButton(ERadioButtonType _rbtype, LPCTSTR _text, UINT _id, HINSTANCE _hinst, CBaseWindow *_parent, const SWindowRect &_rect)
-	: CControlWindow("BUTTON",_rbtype, 0, _text,_parent,_id,_hinst,_rect)
+	: CButton((EButtonType)_rbtype, _text,_id, _hinst, _parent,_rect)
+{
+
+}
+
+CGroupBox::CGroupBox(LPCTSTR _title, UINT _id, HINSTANCE _hinst, CBaseWindow *_parent, const SWindowRect &_rect)
+	: CButton((EButtonType)BS_GROUPBOX, _title, _id, _hinst, _parent, _rect)
 {
 
 }
