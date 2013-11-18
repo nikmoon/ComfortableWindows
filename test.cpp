@@ -106,7 +106,7 @@ CMainWindow::OnMessage(UINT msg, WPARAM wp, LPARAM lp)
 				WORD x,y;
 				x = GET_X_LPARAM(lp);
 				y = GET_Y_LPARAM(lp);
-				pMenu->Display(x,y,m_hWnd);
+				pMenu->Display(x,y,*this);
 			}
 			result = 0;
 			break;

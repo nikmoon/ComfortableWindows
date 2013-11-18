@@ -62,7 +62,7 @@ public:
 	CContextMenu() : CBaseMenu(EMT_MENUDROPDOWN) {};
 	~CContextMenu() { ::DestroyMenu(m_hMenu); };
 
-	void Display(int x, int y, HWND _hwnd) { ::TrackPopupMenuEx(m_hMenu, 0, x, y, _hwnd, NULL); };
+	void Display(int x, int y,const CBaseWindow &_win) { ::TrackPopupMenuEx(m_hMenu, 0, x, y, _win.GetHWnd(), NULL); };
 };
 
 
