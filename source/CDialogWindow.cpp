@@ -84,6 +84,10 @@ CDialogWindow::OnCommand(UINT msg, WPARAM wp, LPARAM lp)
 {
 	LRESULT result;
 
+	//
+	// проверяем уведомление от элемента управления
+	// ---------------------------------------------------------
+	//
 	if (lp != 0)	// получено уведомление от дочернего элемента
 	{
 		CBaseWindow *pCtrl = CBaseWindow::GetObjectPtr((HWND)lp);	// получаем дочерний элемент
@@ -96,6 +100,14 @@ CDialogWindow::OnCommand(UINT msg, WPARAM wp, LPARAM lp)
 		{
 			result = OnMessageDefault(msg,wp,lp);
 		}
+	}
+	//
+	// проверяем уведомление от меню
+	// ---------------------------------------------------------
+	//
+	else if (HIWORD(wp) == 0)
+	{
+		result = ExecuteAction(LOWORD(wp),msg,wp,lp);	// выполняем требуемое действие
 	}
 	else
 	{

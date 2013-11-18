@@ -10,6 +10,7 @@
 #include "source/Controls/CButton.h"
 #include "source/Controls/CEditBox.h"
 #include "source/CDialogWindow.h"
+#include "source/CBaseMenu.h"
 #include <string>
 
 
@@ -20,6 +21,7 @@ using namespace ComfortableWindows;
 enum EActionIndex : int
 {
 	EAI_CLOSEAPP = 0,
+	EAI_SHOWMESSAGE
 };
 
 
@@ -31,7 +33,7 @@ public:
 
 	virtual LRESULT OnMessage(UINT msg, WPARAM wp, LPARAM lp);
 
-	virtual LRESULT OnCommand(UINT msg, WPARAM wp, LPARAM lp);
+//	virtual LRESULT OnCommand(UINT msg, WPARAM wp, LPARAM lp);
 	virtual LRESULT OnPaint(UINT msg, WPARAM wp, LPARAM lp);
 	virtual LRESULT OnDestroy(UINT msg, WPARAM wp, LPARAM lp);
 	virtual LRESULT ExecuteAction(int _aindex, UINT _msg, WPARAM wp, LPARAM lp);
@@ -40,6 +42,9 @@ private:
 	CGroupBox *pGroupBox;
 	CEditBox *pEditBox;
 	CButton *pButtonExit;
+
+	CMenuBar *pMenuBar;
+	CContextMenu *pMenu;
 };
 
 
@@ -47,20 +52,25 @@ private:
 CMainWindow::CMainWindow(HINSTANCE _hinst, LPCTSTR _title, const SWindowRect &_rect)
 	: CDialogWindow(EDWS_WINDOW_SIZIBLE_WITH_MINMAXBUTT, 0, _title, NULL, NULL, _hinst, _rect)
 {
-	MENUITEMINFO mii;
-	string menuName = "Выход";
+	pMenuBar = new CMenuBar(*this);
+	pMenu = new CContextMenu();
 
-	mii.cbSize = sizeof(MENUITEMINFO);
-	mii.fMask = MIIM_TYPE | MIIM_ID;
-	mii.fType = MFT_STRING;
-	mii.dwTypeData = const_cast<LPTSTR>(menuName.c_str());
-	mii.cch = menuName.length();
-	mii.wID = 10;
+	CSubMenu subMenu = CSubMenu();
 
-	HMENU hMenu = ::CreateMenu();
-	::InsertMenuItemA(hMenu, 0, TRUE, &mii);
 
-	::SetMenu(m_hWnd,hMenu);
+	pMenuBar->AddItem("Выход1",EAI_CLOSEAPP);
+	pMenuBar->AddItem("Выход2",EAI_CLOSEAPP);
+	pMenuBar->AddItem("Выход3",EAI_CLOSEAPP);
+
+	pMenu->AddItem("Подменю", &subMenu);
+	pMenu->AddItem("Некое действие", EAI_SHOWMESSAGE);
+	pMenu->AddItem("Выход",EAI_CLOSEAPP);
+
+	subMenu.AddItem("Опять выход", EAI_CLOSEAPP);
+	subMenu.AddItem("Тут тоже выход", EAI_CLOSEAPP);
+
+	pMenuBar->AddItem("Выход4",&subMenu);
+	pMenuBar->Update();
 
 	pGroupBox = new CGroupBox("Маленький редактор", 99, _hinst, this, {10,10,200,130} );
 	pEditBox = new CEditBox(ECT_EDITBOX_MULTILINE_ALLSCROLL,"123",this,100,_hinst,{20,30,100,65});
@@ -71,8 +81,11 @@ CMainWindow::CMainWindow(HINSTANCE _hinst, LPCTSTR _title, const SWindowRect &_r
 
 CMainWindow::~CMainWindow()
 {
+	delete pButtonExit;
 	delete pEditBox;
 	delete pGroupBox;
+	delete pMenu;
+	delete pMenuBar;
 }
 
 
@@ -88,8 +101,14 @@ CMainWindow::OnMessage(UINT msg, WPARAM wp, LPARAM lp)
 			LRESULT hitarea;
 			hitarea = OnMessage(WM_NCHITTEST, 0, lp);
 			if (hitarea == HTCLIENT)
-				MessageBox(m_hWnd,"Вроде бы должно быть меню","123",MB_OK);
-			result = CDialogWindow::OnMessage(msg,wp,lp);
+			{
+				//MessageBox(m_hWnd,"Вроде бы должно быть меню","123",MB_OK);
+				WORD x,y;
+				x = GET_X_LPARAM(lp);
+				y = GET_Y_LPARAM(lp);
+				pMenu->Display(x,y,m_hWnd);
+			}
+			result = 0;
 			break;
 		default:
 			result = CDialogWindow::OnMessage(msg,wp,lp);
@@ -99,33 +118,18 @@ CMainWindow::OnMessage(UINT msg, WPARAM wp, LPARAM lp)
 	return result;
 }
 
-
+/*
 LRESULT
 CMainWindow::OnCommand(UINT msg, WPARAM wp, LPARAM lp)
 {
 	LRESULT result;
 
-	if ((lp == 0) && (HIWORD(wp) == 0))	// получено уведомление от меню
-	{
-		switch (LOWORD(wp))
-		{
-			case 10:
-				result = ExecuteAction(EAI_CLOSEAPP,msg,wp,lp);
-				break;
-			default:
-				result = CDialogWindow::OnCommand(msg,wp,lp);
-				break;
-		}
-	}
-	else
-	{
-		result = CDialogWindow::OnCommand(msg,wp,lp);
-	}
+	result = CDialogWindow::OnCommand(msg,wp,lp);
 
 	return result;
 
 }
-
+*/
 
 LRESULT
 CMainWindow::OnPaint(UINT msg, WPARAM wp, LPARAM lp)
@@ -144,6 +148,7 @@ CMainWindow::OnPaint(UINT msg, WPARAM wp, LPARAM lp)
 LRESULT
 CMainWindow::OnDestroy(UINT msg, WPARAM wp, LPARAM lp)
 {
+//	::DestroyMenu(m_hMenu);
 	PostQuitMessage(0);
 	return 0;
 }
@@ -158,6 +163,9 @@ CMainWindow::ExecuteAction(int _aindex, UINT _msg,  WPARAM wp, LPARAM lp)
 	{
 		case EAI_CLOSEAPP:	// щелчок по кнопке pButton
 			Destroy();
+			break;
+		case EAI_SHOWMESSAGE:
+			MessageBox(m_hWnd, "Вы выбрали действие!!! )))", "Как-то так", MB_OK);
 			break;
 		default:
 			result = CDialogWindow::ExecuteAction(_aindex,_msg,wp,lp);
