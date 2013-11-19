@@ -6,7 +6,6 @@
  */
 
 
-#include <typeinfo>
 #include "source/Controls/CButton.h"
 #include "source/Controls/CEditBox.h"
 #include "source/CDialogWindow.h"
@@ -21,7 +20,8 @@ using namespace ComfortableWindows;
 enum EActionIndex : int
 {
 	EAI_CLOSEAPP = 0,
-	EAI_SHOWMESSAGE
+	EAI_SHOWMESSAGE,
+	EAI_ADDMENUITEM
 };
 
 
@@ -45,6 +45,7 @@ private:
 
 	CMenuBar *pMenuBar;
 	CContextMenu *pMenu;
+	CSubMenu *pSubMenu;
 };
 
 
@@ -52,26 +53,24 @@ private:
 CMainWindow::CMainWindow(HINSTANCE _hinst, LPCTSTR _title, const SWindowRect &_rect)
 	: CDialogWindow(EDWS_WINDOW_SIZIBLE_WITH_MINMAXBUTT, 0, _title, NULL, NULL, _hinst, _rect)
 {
-	pMenuBar = new CMenuBar(*this);
-	pMenu = new CContextMenu();
+	pMenuBar = new CMenuBar(*this);	//создаем главное меню окна
+	pMenu = new CContextMenu();		// создаем контекстное меню
+	pSubMenu = new CSubMenu("Подменю");	// вложенное подменю
 
-	CSubMenu subMenu = CSubMenu();
+	// подготавливаем вложенное подменю
+	pSubMenu->AddItemAtEnd("Создать новый пункт", EAI_ADDMENUITEM);
+	pSubMenu->AddItemAtEnd("Выход", EAI_CLOSEAPP);
 
-
-	pMenuBar->AddItem("Выход1",EAI_CLOSEAPP);
-	pMenuBar->AddItem("Выход2",EAI_CLOSEAPP);
-	pMenuBar->AddItem("Выход3",EAI_CLOSEAPP);
-
-	pMenu->AddItem("Подменю", &subMenu);
-	pMenu->AddItem("Некое действие", EAI_SHOWMESSAGE);
-	pMenu->AddItem("Выход",EAI_CLOSEAPP);
-
-	subMenu.AddItem("Опять выход", EAI_CLOSEAPP);
-	subMenu.AddItem("Тут тоже выход", EAI_CLOSEAPP);
-
-	pMenuBar->AddItem("Выход4",&subMenu);
+	// формируем основное меню окна
+	pMenuBar->AddItemAtEnd(*pSubMenu);
 	pMenuBar->Update();
 
+	// формируем контекстное меню
+	pMenu->AddItemAtEnd(*pSubMenu);
+//	pMenu->AddItemAtEnd("Некое действие", EAI_SHOWMESSAGE);
+//	pMenu->AddItemAtEnd("Выход",EAI_CLOSEAPP);
+
+	// создаем элементы управления
 	pGroupBox = new CGroupBox("Маленький редактор", 99, _hinst, this, {10,10,200,130} );
 	pEditBox = new CEditBox(ECT_EDITBOX_MULTILINE_ALLSCROLL,"123",this,100,_hinst,{20,30,100,65});
 	pButtonExit = new CButton(ECT_BUTTON,"Выход",101,_hinst,this,{ 30, 105, 100, 30});
@@ -84,6 +83,7 @@ CMainWindow::~CMainWindow()
 	delete pButtonExit;
 	delete pEditBox;
 	delete pGroupBox;
+	delete pSubMenu;
 	delete pMenu;
 	delete pMenuBar;
 }
@@ -107,8 +107,12 @@ CMainWindow::OnMessage(UINT msg, WPARAM wp, LPARAM lp)
 				x = GET_X_LPARAM(lp);
 				y = GET_Y_LPARAM(lp);
 				pMenu->Display(x,y,*this);
+				result = 0;
 			}
-			result = 0;
+			else
+			{
+				result = CDialogWindow::OnMessage(msg,wp,lp);
+			}
 			break;
 		default:
 			result = CDialogWindow::OnMessage(msg,wp,lp);
@@ -166,6 +170,9 @@ CMainWindow::ExecuteAction(int _aindex, UINT _msg,  WPARAM wp, LPARAM lp)
 			break;
 		case EAI_SHOWMESSAGE:
 			MessageBox(m_hWnd, "Вы выбрали действие!!! )))", "Как-то так", MB_OK);
+			break;
+		case EAI_ADDMENUITEM:
+			pSubMenu->AddItemAtStart("Создать пункт", EAI_ADDMENUITEM);
 			break;
 		default:
 			result = CDialogWindow::ExecuteAction(_aindex,_msg,wp,lp);

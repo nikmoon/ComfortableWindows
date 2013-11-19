@@ -107,7 +107,7 @@ CDialogWindow::OnCommand(UINT msg, WPARAM wp, LPARAM lp)
 	//
 	else if (HIWORD(wp) == 0)
 	{
-		result = ExecuteAction(LOWORD(wp),msg,wp,lp);	// выполняем требуемое действие
+		result = ExecuteAction(LOWORD(wp),msg,wp,lp);	// выполняем требуемое действие из меню
 	}
 	else
 	{

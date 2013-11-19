@@ -20,21 +20,33 @@ namespace ComfortableWindows
 {
 
 
+/*
+ *	“ипы меню
+ *	------------------------------
+ */
 enum EMenuType : DWORD
 {
-	EMT_MENUBAR = 0,
-	EMT_MENUDROPDOWN
+	EMT_MENUBAR = 0,	// должен использоватьс€ только дл€ создани€ основного меню окна
+	EMT_MENUDROPDOWN	// дл€ контекстного и вложенных меню
 };
 
 
+class CSubMenu;
+
+/*
+ *	Ѕазовый класс меню
+ *	-------------------------------------
+ */
 class CBaseMenu
 {
 public:
 	CBaseMenu(EMenuType _mtype);
 	virtual ~CBaseMenu();
 
-	void AddItem(const string &_itext, DWORD _actionid);
-	void AddItem(const string &_itext, const CBaseMenu *_psubmenu);
+	void AddItemAtEnd(const string &_itext, DWORD _actionid);	// добавление пункта-действи€
+	void AddItemAtStart(const string &_itext, DWORD _actionid);	// добавление пункта-действи€
+	void AddItemAtEnd(const CSubMenu &_submenu);				// добавлени€ пункта-подменю
+	void AddItemAtStart(const CSubMenu &_submenu);				// добавлени€ пункта-подменю
 
 protected:
 	HMENU m_hMenu;
@@ -42,7 +54,26 @@ protected:
 	int m_ItemCount;
 };
 
+/*
+ *	ѕодменю
+ *	----------------------
+ *
+ *	¬сегда должно быть вложено в другое меню
+ *	Ќе уничтожаетс€ €вно, т.к. уничтожаетс€ при уничтожении меню-родител€
+ */
+class CSubMenu : public CBaseMenu
+{
+public:
+	CSubMenu(const string &_mname) : CBaseMenu(EMT_MENUDROPDOWN) { m_Name = _mname; };
+	const string &GetName() const { return m_Name; };
+private:
+	string m_Name;
+};
 
+/*
+ *	ќсновное меню приложени€
+ *	---------------------------------------------
+ */
 class CMenuBar : public CBaseMenu
 {
 public:
@@ -55,7 +86,10 @@ private:
 };
 
 
-
+/*
+ *	 онтекстное меню
+ *	----------------------------------------------
+ */
 class CContextMenu : public CBaseMenu
 {
 public:
@@ -63,13 +97,6 @@ public:
 	~CContextMenu() { ::DestroyMenu(m_hMenu); };
 
 	void Display(int x, int y,const CBaseWindow &_win) { ::TrackPopupMenuEx(m_hMenu, 0, x, y, _win.GetHWnd(), NULL); };
-};
-
-
-class CSubMenu : public CBaseMenu
-{
-public:
-	CSubMenu() : CBaseMenu(EMT_MENUDROPDOWN) {};
 };
 
 } /* namespace ComfortableWindows */
