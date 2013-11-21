@@ -44,8 +44,7 @@ private:
 	CButton *pButtonExit;
 
 	CMenuBar *pMenuBar;
-	CContextMenu *pMenu;
-	CSubMenu *pSubMenu;
+	CContextMenu *pMenu, *pSubMenu;
 };
 
 
@@ -55,18 +54,18 @@ CMainWindow::CMainWindow(HINSTANCE _hinst, LPCTSTR _title, const SWindowRect &_r
 {
 	pMenuBar = new CMenuBar(*this);	//создаем главное меню окна
 	pMenu = new CContextMenu();		// создаем контекстное меню
-	pSubMenu = new CSubMenu("Подменю");	// вложенное подменю
+	pSubMenu = new CContextMenu();	// вложенное подменю
 
 	// подготавливаем вложенное подменю
 	pSubMenu->AddItemAtEnd("Создать новый пункт", EAI_ADDMENUITEM);
 	pSubMenu->AddItemAtEnd("Выход", EAI_CLOSEAPP);
 
 	// формируем основное меню окна
-	pMenuBar->AddItemAtEnd(*pSubMenu);
+	pMenuBar->AddItemAtEnd("Подменю", *pSubMenu);
 	pMenuBar->Update();
 
 	// формируем контекстное меню
-	pMenu->AddItemAtEnd(*pSubMenu);
+	pMenu->AddItemAtEnd("Подменю", *pSubMenu);
 //	pMenu->AddItemAtEnd("Некое действие", EAI_SHOWMESSAGE);
 //	pMenu->AddItemAtEnd("Выход",EAI_CLOSEAPP);
 

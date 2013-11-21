@@ -31,7 +31,7 @@ enum EMenuType : DWORD
 };
 
 
-class CSubMenu;
+class CBaseMenu;
 
 /*
  *	Базовый класс меню
@@ -45,8 +45,8 @@ public:
 
 	void AddItemAtEnd(const string &_itext, DWORD _actionid);	// добавление пункта-действия
 	void AddItemAtStart(const string &_itext, DWORD _actionid);	// добавление пункта-действия
-	void AddItemAtEnd(const CSubMenu &_submenu);				// добавления пункта-подменю
-	void AddItemAtStart(const CSubMenu &_submenu);				// добавления пункта-подменю
+	void AddItemAtEnd(const string &_itext, const CBaseMenu &_submenu);		// добавления пункта-подменю
+	void AddItemAtStart(const string &_itext, const CBaseMenu &_submenu);	// добавления пункта-подменю
 
 protected:
 	HMENU m_hMenu;
@@ -54,21 +54,7 @@ protected:
 	int m_ItemCount;
 };
 
-/*
- *	Подменю
- *	----------------------
- *
- *	Всегда должно быть вложено в другое меню
- *	Не уничтожается явно, т.к. уничтожается при уничтожении меню-родителя
- */
-class CSubMenu : public CBaseMenu
-{
-public:
-	CSubMenu(const string &_mname) : CBaseMenu(EMT_MENUDROPDOWN) { m_Name = _mname; };
-	const string &GetName() const { return m_Name; };
-private:
-	string m_Name;
-};
+
 
 /*
  *	Основное меню приложения
@@ -84,6 +70,8 @@ public:
 private:
 	const CBaseWindow *m_pWindow;
 };
+
+
 
 
 /*

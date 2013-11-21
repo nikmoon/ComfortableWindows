@@ -64,16 +64,15 @@ CBaseMenu::AddItemAtEnd(const string &_itext, const DWORD _actionid)
  *	-----------------------------------------
  */
 void
-CBaseMenu::AddItemAtEnd(const CSubMenu &_submenu)
+CBaseMenu::AddItemAtEnd(const string &_itext, const CBaseMenu &_submenu)
 {
 	MENUITEMINFO mii;
-	string mname = _submenu.GetName();
 
 	mii.cbSize = sizeof(MENUITEMINFO);
 	mii.fMask = MIIM_TYPE | MIIM_SUBMENU;
 	mii.fType = MFT_STRING;
-	mii.dwTypeData = const_cast<LPTSTR>(mname.c_str());
-	mii.cch = mname.length();
+	mii.dwTypeData = const_cast<LPTSTR>(_itext.c_str());
+	mii.cch = _itext.length();
 	mii.hSubMenu = _submenu.m_hMenu;
 	::InsertMenuItem(m_hMenu, m_ItemCount, TRUE, &mii);
 
@@ -106,16 +105,16 @@ CBaseMenu::AddItemAtStart(const string &_itext, const DWORD _actionid)
  *	-----------------------------------------
  */
 void
-CBaseMenu::AddItemAtStart(const CSubMenu &_submenu)
+CBaseMenu::AddItemAtStart(const string &_itext, const CBaseMenu &_submenu)
 {
+
 	MENUITEMINFO mii;
-	string mname = _submenu.GetName();
 
 	mii.cbSize = sizeof(MENUITEMINFO);
 	mii.fMask = MIIM_TYPE | MIIM_SUBMENU;
 	mii.fType = MFT_STRING;
-	mii.dwTypeData = const_cast<LPTSTR>(mname.c_str());
-	mii.cch = mname.length();
+	mii.dwTypeData = const_cast<LPTSTR>(_itext.c_str());
+	mii.cch = _itext.length();
 	mii.hSubMenu = _submenu.m_hMenu;
 	::InsertMenuItem(m_hMenu, 0, TRUE, &mii);
 
