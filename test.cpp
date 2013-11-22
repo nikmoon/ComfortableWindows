@@ -21,7 +21,8 @@ enum EActionIndex : int
 {
 	EAI_CLOSEAPP = 0,
 	EAI_SHOWMESSAGE,
-	EAI_ADDMENUITEM
+	EAI_ADDMENUITEM,
+	EAI_CHANGEMOVABLE
 };
 
 
@@ -42,6 +43,7 @@ private:
 	CGroupBox *pGroupBox;
 	CEditBox *pEditBox;
 	CButton *pButtonExit;
+	CButton *pButtonChange;
 
 	CMenuBar *pMenuBar;
 	CContextMenu *pMenu, *pSubMenu;
@@ -70,10 +72,12 @@ CMainWindow::CMainWindow(HINSTANCE _hinst, LPCTSTR _title, const SWindowRect &_r
 //	pMenu->AddItemAtEnd("Выход",EAI_CLOSEAPP);
 
 	// создаем элементы управления
-	pGroupBox = new CGroupBox("Маленький редактор", 99, _hinst, this, {10,10,200,130} );
 	pEditBox = new CEditBox(ECT_EDITBOX_MULTILINE_ALLSCROLL,"123",this,100,_hinst,{20,30,100,65});
 	pButtonExit = new CButton(ECT_BUTTON,"Выход",101,_hinst,this,{ 30, 105, 100, 30});
 	pButtonExit->OnClick(EAI_CLOSEAPP);
+	pButtonChange = new CButton(ECT_BUTTON,"Проверяем",102,_hinst,this,{ 250, 105, 100, 30});
+	pButtonChange->OnClick(EAI_CHANGEMOVABLE);
+	pGroupBox = new CGroupBox("Маленький редактор", 99, _hinst, this, {10,10,200,130} );
 }
 
 
@@ -172,6 +176,10 @@ CMainWindow::ExecuteAction(int _aindex, UINT _msg,  WPARAM wp, LPARAM lp)
 			break;
 		case EAI_ADDMENUITEM:
 			pSubMenu->AddItemAtStart("Создать пункт", EAI_ADDMENUITEM);
+			break;
+		case EAI_CHANGEMOVABLE:
+			pGroupBox->ChangeMovable();
+			//pButtonExit->ChangeMovable();
 			break;
 		default:
 			result = CDialogWindow::ExecuteAction(_aindex,_msg,wp,lp);

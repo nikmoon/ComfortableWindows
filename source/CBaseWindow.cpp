@@ -47,6 +47,7 @@ CBaseWindow::CBaseWindow(
 	m_hInst = _hinst;
 	m_ClassName = _clname;
 	m_pParent = _parent;
+	m_Movable = false;
 
 	// выполн€ем св€зывание данного экземпл€ра с созданным системным окном
 	Binding(m_hWnd);
@@ -173,6 +174,15 @@ CBaseWindow::SetActionIndex(WORD _ntfy, int _aindex)
 }
 
 
+DWORD
+CBaseWindow::SetStyle(DWORD _style)
+{
+	DWORD oldStyle = ::SetWindowLongPtr(m_hWnd, GWL_STYLE, _style);
+	::SetWindowPos(m_hWnd, 0, 0, 0, 0, 0, SWP_FRAMECHANGED|SWP_NOMOVE|SWP_NOSIZE|SWP_NOOWNERZORDER|SWP_NOZORDER);
+	return oldStyle;
+}
+
+
 LRESULT CALLBACK
 CBaseWindow::BaseWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
@@ -180,6 +190,72 @@ CBaseWindow::BaseWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 	CBaseWindow * pWindow = CBaseWindow::GetObjectPtr(hwnd);
 
 	return (pWindow) ? pWindow->OnMessage(msg, wp, lp) : ::DefWindowProc(hwnd, msg, wp, lp);
+}
+
+LRESULT CALLBACK
+CBaseWindow::MovableWindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+	// получаем адрес св€занного с окном экземпл€ра объекта
+	CBaseWindow * pWindow = CBaseWindow::GetObjectPtr(hwnd);
+
+	switch (msg)
+	{
+		case WM_NCHITTEST:
+			if (::DefWindowProc(hwnd, msg, wp, lp) == HTCLIENT)
+				return HTCAPTION;
+			break;
+		case WM_SIZE:
+		case WM_MOVE:
+			if (pWindow->GetParentWindow())
+			{
+				::InvalidateRect(pWindow->GetParentWindow()->GetHWnd(), NULL, TRUE);
+			}
+			::InvalidateRect(hwnd,NULL,TRUE);
+			break;
+		default:
+			break;
+	}
+
+	return ::DefWindowProc(hwnd, msg, wp, lp);
+}
+
+
+void
+CBaseWindow::InitMovable()
+{
+	// добавл€ем рамку, позвол€ющую измен€ть размер окна, сохран€€ старый стиль окна
+	m_PrevStyle = SetStyle(GetStyle() | WS_SIZEBOX);
+
+	// разрешаем перемещение окна мышкой за любую его часть
+	// дл€ этого замен€ем оконную процедуру, сохран€€ старую
+	m_PrevProc = InitSubclassing(m_hWnd, MovableWindowProc);
+}
+
+
+void
+CBaseWindow::DoneMovable()
+{
+	// возвращаем прежний адрес оконной процедуры
+	DoneSubclassing(m_hWnd, m_PrevProc);
+
+	// возвращаем стиль окна
+	SetStyle(m_PrevStyle);
+}
+
+
+void
+CBaseWindow::ChangeMovable()
+{
+	if (m_Movable)
+	{
+		DoneMovable();
+		m_Movable = false;
+	}
+	else
+	{
+		InitMovable();
+		m_Movable = true;
+	}
 }
 
 
